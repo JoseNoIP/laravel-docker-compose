@@ -7,61 +7,50 @@ services:
       context: .
       dockerfile: Dockerfile
     image: digitalocean.com/php
-    container_name: app
+    container_name: ${APP_CONTAINER_NAME}
     restart: unless-stopped
     tty: true
     environment:
-      SERVICE_NAME: app
+      SERVICE_NAME: ${APP_CONTAINER_NAME}
       SERVICE_TAGS: dev
     working_dir: /var/www/
     volumes:
-      - ./laravelApp/:/var/www
+      - ${LARAVEL_ROOT_PATH}:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
-    networks:
-      - app-network
 
   #Nginx Service
   webserver:
     image: nginx:1.17.7-alpine
-    container_name: webserver
+    container_name: ${WEBSERVER_CONTAINER_NAME}
     restart: unless-stopped
     tty: true
     ports:
       - "80:80"
-      - "443:443"
-      - "3000:3000"
     volumes:
-      - ./laravelApp/:/var/www/
+      - ${LARAVEL_ROOT_PATH}:/var/www/
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./logs/nginx/:/var/log/nginx/
-    networks:
-      - app-network
 
   #MySQL Service
   db:
     image: mysql:5.7.29
-    container_name: db
+    container_name: ${db_CONTAINER_NAME}
     restart: unless-stopped
     tty: true
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: databasename
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
       SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      SERVICE_NAME: ${db_CONTAINER_NAME}
     volumes:
-      - ./dbdata:/var/lib/mysql/
+      - ${MYSQL_DATA_PATH}:/var/lib/mysql/
       - ./mysql/my.cnf:/etc/mysql/my.cnf
-    networks:
-      - app-network
 
 #Docker Networks
 networks:
-  app-network:
-    driver: bridge
-
-#Volumes
-volumes:
-  dbdata:
-    driver: local
+  default:
+     external:
+       name: ${NETWORK}

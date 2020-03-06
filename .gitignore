@@ -2,3 +2,4 @@
 dbdata
 laravelApp
 logs
+.env

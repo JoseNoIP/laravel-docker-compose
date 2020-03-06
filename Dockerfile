@@ -1,7 +1,7 @@
 FROM php:7.3-fpm
 
 # Copy composer.lock and composer.json
-COPY ./laravelApp/composer.lock ./laravelApp/composer.json ./laravelApp/.env /var/www/
+COPY ${LARAVEL_ROOT_PATH}/composer.lock ${LARAVEL_ROOT_PATH}/composer.json ${LARAVEL_ROOT_PATH}/.env /var/www/
 
 # Set working directory
 WORKDIR /var/www/
@@ -39,10 +39,10 @@ RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
 # Copy existing application directory contents
-COPY ./laravelApp/ /var/www/
+COPY ${LARAVEL_ROOT_PATH} /var/www/
 
 # Copy existing application directory permissions
-COPY --chown=www:www ./laravelApp/ /var/www/
+COPY --chown=www:www ${LARAVEL_ROOT_PATH} /var/www/
 
 # Change current user to www
 USER www
