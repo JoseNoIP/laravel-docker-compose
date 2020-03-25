@@ -1,4 +1,4 @@
-FROM php:7.3-fpm
+FROM php:7.3-alpine
 
 # Copy composer.lock and composer.json
 COPY ./laravelApp/composer.lock ./laravelApp/composer.json ./laravelApp/.env /var/www/

@@ -17,6 +17,11 @@ services:
     volumes:
       - ${LARAVEL_ROOT_PATH}:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    logging:
+      driver: ${APP_LOG_DRIVER:-json-file}
+      options:
+        max-size: ${APP_LOG_MAX_SIZE:-2m}
+        max-file: ${APP_LOG_MAX_FILE:-10}
 
   #Nginx Service
   webserver:
@@ -24,12 +29,24 @@ services:
     container_name: ${WEBSERVER_CONTAINER_NAME}
     restart: unless-stopped
     tty: true
-    ports:
-      - "80:80"
     volumes:
       - ${LARAVEL_ROOT_PATH}:/var/www/
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./logs/nginx/:/var/log/nginx/
+      - ${SSL_PATH}:/certs
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      VIRTUAL_HOST: ${DOMAINS}
+      LETSENCRYPT_HOST: ${DOMAINS}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      SSL:
+      SSLCERT: ${SSL_CERTIFICATE}
+      SSLKEY: ${SSL_KEY}
+    logging:
+      driver: ${WEBSERVER_LOG_DRIVER:-json-file}
+      options:
+        max-size: ${WEBSERVER_LOG_MAX_SIZE:-2m}
+        max-file: ${WEBSERVER_LOG_MAX_FILE:-10}
 
   #MySQL Service
   db:
@@ -37,8 +54,6 @@ services:
     container_name: ${DB_CONTAINER_NAME}
     restart: unless-stopped
     tty: true
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -49,6 +64,11 @@ services:
     volumes:
       - ${MYSQL_DATA_PATH}:/var/lib/mysql/
       - ./mysql/my.cnf:/etc/mysql/my.cnf
+    logging:
+      driver: ${DB_LOG_DRIVER:-json-file}
+      options:
+        max-size: ${DB_LOG_MAX_SIZE:-2m}
+        max-file: ${DB_LOG_MAX_FILE:-10}
 
 #Docker Networks
 networks:
